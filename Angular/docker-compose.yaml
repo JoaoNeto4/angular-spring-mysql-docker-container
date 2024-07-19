@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  frontend:
+    container_name: helpdesk-front
+    build: .
+    image: helpdesk-front:v1
+    ports:
+      - 80:80
+    expose:
+      - 80
+    networks:
+      - dev-network
+    
+networks:
+  dev-network:
+   driver: bridge

@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: db
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: helpdesk
+      #MYSQL_USER: root
+      #MYSQL_PASSWORD: root
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - 3307:3306
+    volumes:
+      - './Springboot/docker/db/data:/var/lib/mysql'
+      - './Springboot/docker/db/my.cnf:/etc/mysql/conf.d/my.cnf'
+      - './Springboot/docker/db/sql:/docker-entrypoint-initdb.d'
+    #networks:
+    #  - dev-network
+  
+  backend:
+    build:
+      context: ./Springboot
+      dockerfile: Dockerfile
+    container_name: helpdesk-backend
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/helpdesk
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    #networks:
+    #  - dev-network
+    depends_on:
+      - db
+
+  frontend:
+    container_name: helpdesk-front
+    build: ./Angular
+    image: helpdesk-front:v1
+    ports:
+      - 80:80
+    expose:
+      - 80
+    #networks:
+    #  - dev-network
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
+  
+#networks:
+#  dev-network:
+#    driver: bridge
